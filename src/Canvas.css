@@ -6,6 +6,11 @@ polygon {
     transition: fill 0.2s ease-in-out;
 }
 
+line {
+    stroke-width: 5px;
+    stroke: #5983d1;
+}
+
 polygon:hover {
     fill: #aed33e;
 }
