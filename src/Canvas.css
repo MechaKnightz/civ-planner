@@ -6,9 +6,15 @@ polygon {
     transition: fill 0.2s ease-in-out;
 }
 
-line {
+.river {
     stroke-width: 5px;
-    stroke: #5983d1;
+    stroke: #78a1ee;
+}
+
+.river-preview {
+    stroke-width: 5px;
+    stroke: #42577e;
+    outline: auto;
 }
 
 polygon:hover {
