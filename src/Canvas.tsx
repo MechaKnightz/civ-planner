@@ -5,10 +5,14 @@ import HexPoint from './HexPoint'
 import CubePoint from './CubePoint'
 import Hex from './Hex'
 import River from './River'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faMountain } from '@fortawesome/free-solid-svg-icons'
 
 enum MouseState {
 	None,
-	River
+	River,
+	Mountain,
+	CityCenter
 }
 
 enum Direction {
@@ -27,11 +31,11 @@ class Canvas extends React.Component {
 	private canvasContainer: React.RefObject<HTMLInputElement>;
 	private svgRoot: React.RefObject<SVGAElement>;
 
-	private riverPreview: SVGElement | undefined;
+	private placingPreview: SVGElement | undefined;
 
 	private mouseState: MouseState;
 
-	private rivers: River[]; // todo make river class with hexpoint and reference to element 
+	private rivers: River[];
 
 	constructor(props: any) {
 		super(props);
@@ -46,7 +50,7 @@ class Canvas extends React.Component {
 			<div ref={this.canvasContainer} className="canvas-container">
 				<div className="toolbar">
 					<button type="button" className="btn btn-primary shadow-sm" onClick={this.onRiverButtonClick.bind(this)}>River</button>
-					<button type="button" className="btn btn-primary shadow-sm">Button2</button>
+					<button type="button" className="btn btn-primary shadow-sm" onClick={this.onMountainButtonClick.bind(this)}>Mountain</button>
 					<button type="button" className="btn btn-primary shadow-sm">Button3</button>
 				</div>
 				<svg onMouseMove={this.onMouseMove.bind(this)} onClick={this.onCanvasMouseClick.bind(this)} onContextMenu={this.onCanvasRightMouseClick.bind(this)}><g ref={this.svgRoot}></g></svg>
@@ -54,18 +58,14 @@ class Canvas extends React.Component {
 		);
 	}
 
+	onMountainButtonClick(event: React.MouseEvent) {
+		event.preventDefault();
+		this.trySwitchModeTo(MouseState.Mountain);
+	}
+
 	onRiverButtonClick(event: React.MouseEvent) {
 		event.preventDefault();
-		if (this.mouseState != MouseState.River) {
-			this.mouseState = MouseState.River;
-		}
-		else {
-			if(this.riverPreview !== undefined && this.riverPreview !== null)
-			{
-				this.riverPreview.remove();
-			}
-			this.mouseState = MouseState.None;
-		}
+		this.trySwitchModeTo(MouseState.River);
 	}
 
 	onCanvasRightMouseClick(event: React.MouseEvent)
@@ -144,12 +144,12 @@ class Canvas extends React.Component {
 
 	onMouseMove(event: React.MouseEvent) {
 		event.preventDefault();
+		if(this.placingPreview !== undefined && this.placingPreview !== null)
+		{
+			this.placingPreview.remove();
+		}
 		switch (this.mouseState) {
 			case MouseState.River:
-				if(this.riverPreview !== undefined && this.riverPreview !== null)
-				{
-					this.riverPreview.remove();
-				}
 				var mousePoint = new Point(event.clientX, event.clientY);
 				var closestHexPixelPoint = this.hexToPixel(this.pixelToHexPoint(mousePoint));
 				var corners = this.getClosestCorners(mousePoint, closestHexPixelPoint);
@@ -159,8 +159,18 @@ class Canvas extends React.Component {
 				line.setAttribute("y1", corners[0].y.toString());
 				line.setAttribute("x2", corners[1].x.toString());
 				line.setAttribute("y2", corners[1].y.toString());
-				this.riverPreview = line;
+				this.placingPreview = line;
 				this.svgRoot.current!.appendChild(line);
+				break;
+			case MouseState.CityCenter:
+				var mousePoint = new Point(event.clientX, event.clientY);
+				var closestHexPixelPoint = this.hexToPixel(this.pixelToHexPoint(mousePoint));
+				var iconContainer = this.createSVGElement("g");
+				var icon = React.createElement(FontAwesomeIcon, {icon: faMountain});
+				//iconContainer.appendChild(icon);
+
+				this.placingPreview = iconContainer;
+				this.svgRoot.current!.appendChild(iconContainer);
 				break;
 		}
 	}
@@ -358,6 +368,19 @@ class Canvas extends React.Component {
 
 	toDegrees (angle: number): number {
 		return angle * (180 / Math.PI);
+	}
+
+	trySwitchModeTo(newState: MouseState): void {
+		if(this.placingPreview !== undefined && this.placingPreview !== null)
+		{
+			this.placingPreview.remove();
+		}
+		if (this.mouseState != newState) {
+			this.mouseState = newState;
+		}
+		else {
+			this.mouseState = MouseState.None;
+		}
 	}
 
 	createSVGElement(element: string): SVGElement {
