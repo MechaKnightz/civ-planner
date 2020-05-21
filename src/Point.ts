@@ -6,8 +6,17 @@ class Point {
     x: number;
     y: number;
 
-    public toString = () : string => {
+    toString = () : string => {
         return `${this.x},${this.y}`;
+    }
+
+    add(other: Point): Point {
+        return new Point(this.x + other.x, this.y + other.y);
+    }
+
+    getAngle() {
+        var angle = Math.atan2(this.y, this.x);
+        return angle;
     }
 }
 

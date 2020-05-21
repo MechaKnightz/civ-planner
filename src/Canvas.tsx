@@ -49,7 +49,7 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 		super(props);
 		this.canvasContainer = React.createRef();
 		this.mouseState = MouseState.None;
-		this.state = {grid: new Map<HexPoint, Hex>(), rivers:  new Array()};
+		this.state = { grid: new Map<HexPoint, Hex>(), rivers: new Array() };
 	}
 
 	render() {
@@ -73,8 +73,7 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 		this.trySwitchModeTo(MouseState.River);
 	}
 
-	onCanvasRightMouseClick(event: React.MouseEvent)
-	{
+	onCanvasRightMouseClick(event: React.MouseEvent) {
 		event.preventDefault();
 		switch (this.mouseState) {
 			case MouseState.River:
@@ -89,25 +88,23 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 
 				var hex = undefined;
 				grid.forEach((value, key) => {
-					if(key.q === hexPoint.q && key.r === hexPoint.r)
+					if (key.q === hexPoint.q && key.r === hexPoint.r)
 						hex = value;
 				});
 				var neighbourHex = undefined;
 				grid.forEach((value, key) => {
-					if(key.q === neighbourPoint.q && key.r === neighbourPoint.r)
-					neighbourHex = value;
+					if (key.q === neighbourPoint.q && key.r === neighbourPoint.r)
+						neighbourHex = value;
 				});
 
-				if(hex !== undefined && neighbourHex !== undefined) {
-					for(var i = rivers.length - 1; i >= 0; i--)
-					{
-						if((rivers[i].hex === hex && rivers[i].hex2 === neighbourHex )||(rivers[i].hex === neighbourHex && rivers[i].hex2 === hex))
-						{
+				if (hex !== undefined && neighbourHex !== undefined) {
+					for (var i = rivers.length - 1; i >= 0; i--) {
+						if ((rivers[i].hex === hex && rivers[i].hex2 === neighbourHex) || (rivers[i].hex === neighbourHex && rivers[i].hex2 === hex)) {
 							rivers.splice(i, 1);
 						}
 					}
 				}
-				this.setState({rivers})
+				this.setState({ rivers })
 				break;
 		}
 	}
@@ -123,23 +120,26 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 				var hexPoint = HexPoint.fromPixel(mousePoint);
 				var rivers = this.state.rivers;
 				var grid = this.state.grid;
-				
-				var hex = undefined;
+
+				var hex: Hex | undefined = undefined;
 				grid.forEach((value, key) => {
-					if(key.q === hexPoint.q && key.r === hexPoint.r)
+					if (key.q === hexPoint.q && key.r === hexPoint.r)
 						hex = value;
 				});
-				var neighbourHex = undefined;
+				var neighbourHex: Hex | undefined = undefined;
 				grid.forEach((value, key) => {
-					if(key.q === neighbourPoint.q && key.r === neighbourPoint.r)
+					if (key.q === neighbourPoint.q && key.r === neighbourPoint.r)
 						neighbourHex = value;
 				});
 
-				if(hex !== undefined && neighbourHex !== undefined)
-				{
-					rivers.push(new River(hex, neighbourHex));
-
-					this.setState({rivers});
+				if (hex !== undefined && neighbourHex !== undefined) {
+					console.log(Direction[direction]);
+					console.log(hex);
+					console.log(neighbourHex);
+					if(River.indexOfRiver(rivers, new River(hex, neighbourHex)) === -1) {
+						rivers.push(new River(hex, neighbourHex));
+						this.setState({ rivers });
+					}
 				}
 				break;
 		}
@@ -147,8 +147,7 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 
 	onMouseMove(event: React.MouseEvent) {
 		event.preventDefault();
-		if(this.placingPreview !== undefined && this.placingPreview !== null)
-		{
+		if (this.placingPreview !== undefined && this.placingPreview !== null) {
 			this.placingPreview.remove();
 		}
 		switch (this.mouseState) {
@@ -207,11 +206,11 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 			}
 		}
 
-		this.setState({grid});
+		this.setState({ grid });
 		//this.svgRoot.current!.addEventListener('contextmenu', event => event.preventDefault());
 	}
 
-	directionToNeightbour(basePoint: HexPoint, direction:Direction): HexPoint {
+	directionToNeightbour(basePoint: HexPoint, direction: Direction): HexPoint {
 		switch (direction) {
 			case Direction.UpRight:
 				return new HexPoint(basePoint.q + 1, basePoint.r - 1);
@@ -230,27 +229,25 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 		}
 	}
 
-	angleToDirection(angle: number): Direction
-	{
-		if(angle < 30)
+	angleToDirection(angle: number): Direction {
+		if (angle < 30)
 			return Direction.Right;
-		else if(angle < 90)
+		else if (angle < 90)
 			return Direction.UpRight;
-		else if(angle < 150)
+		else if (angle < 150)
 			return Direction.UpLeft;
-		else if(angle < 210)
+		else if (angle < 210)
 			return Direction.Left;
-		else if(angle < 270)
+		else if (angle < 270)
 			return Direction.DownLeft;
-		else if(angle < 330)
+		else if (angle < 330)
 			return Direction.DownRight;
-		else 
+		else
 			return Direction.Right;
 	}
 
 	trySwitchModeTo(newState: MouseState): void {
-		if(this.placingPreview !== undefined && this.placingPreview !== null)
-		{
+		if (this.placingPreview !== undefined && this.placingPreview !== null) {
 			this.placingPreview.remove();
 		}
 		if (this.mouseState != newState) {

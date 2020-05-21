@@ -11,12 +11,6 @@ interface HexProps {
 function HexGrid(props: HexProps ) {
     return (
         <g className="svg-root">
-            {/* {
-                props.rivers.forEach(river => {
-                    
-                    (<g y1={}></g>)
-                })
-            } */}
             {Array.from(props.grid).map(([key, hex])=> {
                 var drawCoord = hex.position.pointCoord();
                     return (
@@ -25,6 +19,13 @@ function HexGrid(props: HexProps ) {
                     </g>)
                     //toString might not work
                 })}
+            {props.rivers.map(river => {
+                    var points = river.hex.getBorderPoints(river.hex2);
+                    return(
+                    <g key={river.toString()} >
+                        <line className="river" x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} />
+                    </g>)})
+            }
         </g>
         );
 }

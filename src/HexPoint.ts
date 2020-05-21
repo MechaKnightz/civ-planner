@@ -14,8 +14,6 @@ class HexPoint {
     
     pointCoord(): Point {
         var x = Hex.radius * (Math.sqrt(3) * this.q + Math.sqrt(3) / 2 * this.r);
-        if(this.q === 0)
-            console.log(`${this.q} = ${x}`);
 		var y = Hex.radius * (3. / 2 * this.r);
 		return new Point(x, y);
     }
@@ -55,7 +53,7 @@ class HexPoint {
 		var x = hex.q;
 		var z = hex.r;
 		var y = -x - z;
-		return { x, y, z };
+		return new CubePoint( x, y, z );
 	}
 
 	static cubeToAxial(cube: CubePoint): HexPoint {
@@ -84,11 +82,13 @@ class HexPoint {
 		else
 			rz = -rx - ry;
 		return { x: rx, y: ry, z: rz };
-    }
-    
-    public toString = () : string => {
+	}
+	
+    toString = () : string => {
         return `${this.q},${this.r}`;
-    }
+	}
+	
+	
 }
 
 export default HexPoint;
