@@ -1,6 +1,7 @@
 import CubePoint from './CubePoint'
 import Point from './Point'
 import Hex from './Hex'
+import Utils from './Utils'
 
 class HexPoint {
     constructor(q: number, r: number)
@@ -19,7 +20,7 @@ class HexPoint {
     }
     
     getAllHexCorners(): Point[] {
-        var res: Point[] = new Array;
+        var res: Point[] = [];
 		for (var i = 0; i < 6; i++) {
 			res.push(this.getHexCorner(i)); 
 		}
@@ -88,7 +89,20 @@ class HexPoint {
         return `${this.q},${this.r}`;
 	}
 	
-	
+	getBorderPoints(neighbour: HexPoint): [Point, Point] {
+        var basePoint = this.pointCoord();
+        var neighbourPoint = neighbour.pointCoord();
+
+        var vec = new Point(neighbourPoint.x - basePoint.x, neighbourPoint.y - basePoint.y);
+
+        var midPoint = new Point(vec.x / 2, vec.y / 2);
+
+        var clockwise = vec.getAngle() + Math.PI / 2;
+        var counterClockwise = vec.getAngle() - Math.PI / 2;
+
+        return [Utils.vectorFromAngleAndLength(basePoint.add(midPoint), clockwise, Hex.radius / 2), 
+            Utils.vectorFromAngleAndLength(basePoint.add(midPoint), counterClockwise, Hex.radius / 2)];
+    }
 }
 
 export default HexPoint;

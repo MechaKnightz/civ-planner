@@ -2,7 +2,6 @@ import * as React from 'react';
 import './Canvas.css';
 import Point from './Point'
 import HexPoint from './HexPoint'
-import CubePoint from './CubePoint'
 import Hex from './Hex'
 import River from './River'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -10,22 +9,8 @@ import { faMountain } from '@fortawesome/free-solid-svg-icons'
 import Toolbar from './Toolbar'
 import HexGrid from './HexGrid'
 import Utils from './Utils'
-
-enum MouseState {
-	None,
-	River,
-	Mountain,
-	CityCenter
-}
-
-enum Direction {
-	UpLeft,
-	UpRight,
-	Left,
-	Right,
-	DownLeft,
-	DownRight
-}
+import MouseState from './MouseState'
+import Direction from './Direction'
 
 interface ICanvasProps {
 }
@@ -34,6 +19,8 @@ interface ICanvasProps {
 interface ICanvasState {
 	rivers: River[];
 	grid: Map<HexPoint, Hex>;
+	mouseState: MouseState;
+	mousePoint: Point;
 }
 
 
@@ -41,15 +28,10 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 
 	private canvasContainer: React.RefObject<HTMLInputElement>;
 
-	private placingPreview: SVGElement | undefined;
-
-	private mouseState: MouseState;
-
 	constructor(props: any) {
 		super(props);
 		this.canvasContainer = React.createRef();
-		this.mouseState = MouseState.None;
-		this.state = { grid: new Map<HexPoint, Hex>(), rivers: new Array() };
+		this.state = { grid: new Map<HexPoint, Hex>(), rivers: [], mouseState: MouseState.None, mousePoint: new Point(0, 0)};
 	}
 
 	render() {
@@ -57,7 +39,7 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 			<div ref={this.canvasContainer} className="canvas-container">
 				<Toolbar onRiverButtonClick={this.onRiverButtonClick.bind(this)} onMountainButtonClick={this.onMountainButtonClick.bind(this)} ></Toolbar>
 				<svg onMouseMove={this.onMouseMove.bind(this)} onClick={this.onCanvasMouseClick.bind(this)} onContextMenu={this.onCanvasRightMouseClick.bind(this)}>
-					<HexGrid rivers={this.state.rivers} grid={this.state.grid}></HexGrid>
+					<HexGrid rivers={this.state.rivers} grid={this.state.grid} mouseState={this.state.mouseState} mousePoint={this.state.mousePoint}></HexGrid>
 				</svg>
 			</div>
 		);
@@ -75,12 +57,13 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 
 	onCanvasRightMouseClick(event: React.MouseEvent) {
 		event.preventDefault();
-		switch (this.mouseState) {
+		var mouseState = this.state.mouseState;
+		switch (mouseState) {
 			case MouseState.River:
 				var mousePoint = new Point(event.clientX, event.clientY);
 				var closestHexPixelPoint = HexPoint.fromPixel(mousePoint).toPixel();
-				var direction = this.angleToDirection(Utils.toDegrees(Utils.angleBetweenCoordinates(closestHexPixelPoint, mousePoint)));
-				var neighbourPoint = this.directionToNeightbour(HexPoint.fromPixel(mousePoint), direction);
+				var direction = Utils.angleToDirection(Utils.toDegrees(Utils.angleBetweenCoordinates(closestHexPixelPoint, mousePoint)));
+				var neighbourPoint = Utils.directionToNeightbour(HexPoint.fromPixel(mousePoint), direction);
 				var hexPoint = HexPoint.fromPixel(mousePoint);
 
 				var rivers = this.state.rivers;
@@ -111,12 +94,13 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 
 	onCanvasMouseClick(event: React.MouseEvent) {
 		event.preventDefault();
-		switch (this.mouseState) {
+		var mouseState = this.state.mouseState;
+		switch (mouseState) {
 			case MouseState.River:
 				var mousePoint = new Point(event.clientX, event.clientY);
 				var closestHexPixelPoint = HexPoint.fromPixel(mousePoint).toPixel();
-				var direction = this.angleToDirection(Utils.toDegrees(Utils.angleBetweenCoordinates(closestHexPixelPoint, mousePoint)));
-				var neighbourPoint = this.directionToNeightbour(HexPoint.fromPixel(mousePoint), direction);
+				var direction = Utils.angleToDirection(Utils.toDegrees(Utils.angleBetweenCoordinates(closestHexPixelPoint, mousePoint)));
+				var neighbourPoint = Utils.directionToNeightbour(HexPoint.fromPixel(mousePoint), direction);
 				var hexPoint = HexPoint.fromPixel(mousePoint);
 				var rivers = this.state.rivers;
 				var grid = this.state.grid;
@@ -147,35 +131,7 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 
 	onMouseMove(event: React.MouseEvent) {
 		event.preventDefault();
-		if (this.placingPreview !== undefined && this.placingPreview !== null) {
-			this.placingPreview.remove();
-		}
-		switch (this.mouseState) {
-			case MouseState.River:
-				// var mousePoint = new Point(event.clientX, event.clientY);
-				// var closestHexPixelPoint = HexPoint.fromPixel(mousePoint).toPixel();
-				// var corners = this.getClosestCorners(mousePoint, closestHexPixelPoint);
-				// var line = this.createSVGElement("line");
-				// line.classList.add("river-preview");
-				// line.setAttribute("x1", corners[0].x.toString());
-				// line.setAttribute("y1", corners[0].y.toString());
-				// line.setAttribute("x2", corners[1].x.toString());
-				// line.setAttribute("y2", corners[1].y.toString());
-				// this.placingPreview = line;
-				//todo preview
-				//this.svgRoot.current!.appendChild(line); 
-				break;
-			case MouseState.CityCenter:
-				// var mousePoint = new Point(event.clientX, event.clientY);
-				// var closestHexPixelPoint = this.hexToPixel(this.pixelToHexPoint(mousePoint));
-				// var iconContainer = this.createSVGElement("g");
-				// var icon = React.createElement(FontAwesomeIcon, {icon: faMountain});
-				// //iconContainer.appendChild(icon);
-
-				// this.placingPreview = iconContainer;
-				// this.svgRoot.current!.appendChild(iconContainer);
-				break;
-		}
+		this.setState({mousePoint: new Point(event.clientX, event.clientY)})
 	}
 
 	getClosestCorners(mousePoint: Point, hexPoint: Point): [Point, Point] {
@@ -210,52 +166,17 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 		//this.svgRoot.current!.addEventListener('contextmenu', event => event.preventDefault());
 	}
 
-	directionToNeightbour(basePoint: HexPoint, direction: Direction): HexPoint {
-		switch (direction) {
-			case Direction.UpRight:
-				return new HexPoint(basePoint.q + 1, basePoint.r - 1);
-			case Direction.Right:
-				return new HexPoint(basePoint.q + 1, basePoint.r);
-			case Direction.DownRight:
-				return new HexPoint(basePoint.q, basePoint.r + 1);
-			case Direction.DownLeft:
-				return new HexPoint(basePoint.q - 1, basePoint.r + 1);
-			case Direction.Left:
-				return new HexPoint(basePoint.q - 1, basePoint.r);
-			case Direction.UpLeft:
-				return new HexPoint(basePoint.q, basePoint.r - 1);
-			default:
-				throw new Error("Error neighbour");
-		}
-	}
-
-	angleToDirection(angle: number): Direction {
-		if (angle < 30)
-			return Direction.Right;
-		else if (angle < 90)
-			return Direction.UpRight;
-		else if (angle < 150)
-			return Direction.UpLeft;
-		else if (angle < 210)
-			return Direction.Left;
-		else if (angle < 270)
-			return Direction.DownLeft;
-		else if (angle < 330)
-			return Direction.DownRight;
-		else
-			return Direction.Right;
-	}
+	
 
 	trySwitchModeTo(newState: MouseState): void {
-		if (this.placingPreview !== undefined && this.placingPreview !== null) {
-			this.placingPreview.remove();
-		}
-		if (this.mouseState != newState) {
-			this.mouseState = newState;
+		var mouseState = this.state.mouseState;
+		if (mouseState !== newState) {
+			mouseState = newState;
 		}
 		else {
-			this.mouseState = MouseState.None;
+			mouseState = MouseState.None;
 		}
+		this.setState({mouseState});
 	}
 }
 export default Canvas;
