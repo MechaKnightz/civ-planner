@@ -48,7 +48,6 @@ function renderSwitch(state: MouseState, mouse: Point) {
             <g key="river-preview">
                 <line className="river-preview" x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} />
             </g>)
-        break;
     }
 }
 

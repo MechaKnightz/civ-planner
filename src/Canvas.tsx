@@ -4,8 +4,6 @@ import Point from './Point'
 import HexPoint from './HexPoint'
 import Hex from './Hex'
 import River from './River'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMountain } from '@fortawesome/free-solid-svg-icons'
 import Toolbar from './Toolbar'
 import HexGrid from './HexGrid'
 import Utils from './Utils'
@@ -15,14 +13,12 @@ import Direction from './Direction'
 interface ICanvasProps {
 }
 
-
 interface ICanvasState {
 	rivers: River[];
 	grid: Map<HexPoint, Hex>;
 	mouseState: MouseState;
 	mousePoint: Point;
 }
-
 
 class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 
@@ -149,8 +145,6 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 
 		this.setState({ grid });
 	}
-
-	
 
 	trySwitchModeTo(newState: MouseState): void {
 		var mouseState = this.state.mouseState;
