@@ -16,10 +16,14 @@ class River {
     static indexOfRiver(rivers: River[], searchRiver: River): number {
         var res = -1;
         rivers.forEach((river, i) => {
-            if(river.hex.position.q === searchRiver.hex.position.q &&
+            if((river.hex.position.q === searchRiver.hex.position.q &&
                 river.hex.position.r === searchRiver.hex.position.r &&
                 river.hex2.position.q === searchRiver.hex2.position.q &&
-                river.hex2.position.r === searchRiver.hex2.position.r)
+                river.hex2.position.r === searchRiver.hex2.position.r) ||
+                (river.hex.position.q === searchRiver.hex2.position.q &&
+                river.hex.position.r === searchRiver.hex2.position.r &&
+                river.hex2.position.q === searchRiver.hex.position.q &&
+                river.hex2.position.r === searchRiver.hex.position.r))
                     res = i;
         });
         return res
