@@ -134,22 +134,7 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 		this.setState({mousePoint: new Point(event.clientX, event.clientY)})
 	}
 
-	getClosestCorners(mousePoint: Point, hexPoint: Point): [Point, Point] {
-		var pointsAndDistances: Map<Point, number> = new Map<Point, number>();
-		var corners = HexPoint.fromPixel(hexPoint).getAllHexCorners();
-
-		corners.forEach(corner => {
-			var distance = Math.hypot(mousePoint.x - corner.x, mousePoint.y - corner.y);
-			pointsAndDistances.set(corner, distance);
-		});
-
-		var sortedMap: Map<Point, number> = new Map([...pointsAndDistances.entries()].sort((n1, n2) => n1[1] - n2[1]));
-
-		return [[...sortedMap][0][0], [...sortedMap][1][0]];
-	}
-
 	componentDidMount() {
-		//this.svgCanvas.current.setAttribute("viewBox", `0 0 1920 1080`);
 		var width = 20;
 		var height = 12
 
@@ -163,7 +148,6 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 		}
 
 		this.setState({ grid });
-		//this.svgRoot.current!.addEventListener('contextmenu', event => event.preventDefault());
 	}
 
 	
