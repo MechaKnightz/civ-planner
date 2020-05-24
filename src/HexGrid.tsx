@@ -5,6 +5,10 @@ import HexPoint from './HexPoint'
 import MouseState from './MouseState'
 import Point from './Point';
 import Utils from './Utils'
+import { HexType } from './Hex'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faMountain } from '@fortawesome/free-solid-svg-icons'
+import HexComponent from './HexComponent'
 
 interface HexProps {
     grid: Map<HexPoint, Hex>;
@@ -17,12 +21,7 @@ function HexGrid(props: HexProps) {
     return (
         <g className="svg-root">
             {Array.from(props.grid).map(([key, hex])=> {
-                var drawCoord = hex.position.pointCoord();
-                    return (
-                    <g key={key.toString()} transform={`translate(${drawCoord.x},${drawCoord.y})`}>
-                        <polygon points={Hex.shape.toString()}></polygon>
-                    </g>)
-                    //toString might not work
+                return (<HexComponent hexKey={key} hex={hex}></HexComponent>)
                 })}
             {props.rivers.map(river => {
                     var points = river.hex.position.getBorderPoints(river.hex2.position);
@@ -45,10 +44,22 @@ function renderSwitch(state: MouseState, mouse: Point) {
             var hexPoint = HexPoint.fromPixel(mouse);
             var points = hexPoint.getBorderPoints(neighbourPoint);
             return(
-            <g key="river-preview">
-                <line className="river-preview" x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} />
-            </g>)
+                <g key="river-preview">
+                    <line className="river-preview" x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} />
+                </g>)
+        case MouseState.Mountain:
+            var closestHexPixelPoint = HexPoint.fromPixel(mouse).toPixel();
+            var direction = Utils.angleToDirection(Utils.toDegrees(Utils.angleBetweenCoordinates(closestHexPixelPoint, mouse)));
+            var hexPoint = HexPoint.fromPixel(mouse);
+            var drawCoord = HexPoint.fromPixel(mouse).toPixel();
+            return(
+                <g key="mountain-preview" className="mountain-preview" transform={`translate(${drawCoord.x},${drawCoord.y})`}>
+                    <polygon className="mountain-preview-polygon" points={Hex.shape.toString()}></polygon>
+                    <g transform="translate(-30, -30) scale(0.1)">
+                        <FontAwesomeIcon viewBox="" icon={faMountain}/>
+                    </g>)
+                </g>)
     }
 }
 
-export default HexGrid;
+export default HexGrid; 

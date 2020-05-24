@@ -3,12 +3,12 @@ import './Canvas.css';
 import Point from './Point'
 import HexPoint from './HexPoint'
 import Hex from './Hex'
+import { HexType } from './Hex'
 import River from './River'
 import Toolbar from './Toolbar'
 import HexGrid from './HexGrid'
 import Utils from './Utils'
 import MouseState from './MouseState'
-import Direction from './Direction'
 
 interface ICanvasProps {
 }
@@ -56,36 +56,57 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 		var mouseState = this.state.mouseState;
 		switch (mouseState) {
 			case MouseState.River:
-				var mousePoint = new Point(event.clientX, event.clientY);
-				var closestHexPixelPoint = HexPoint.fromPixel(mousePoint).toPixel();
-				var direction = Utils.angleToDirection(Utils.toDegrees(Utils.angleBetweenCoordinates(closestHexPixelPoint, mousePoint)));
-				var neighbourPoint = Utils.directionToNeightbour(HexPoint.fromPixel(mousePoint), direction);
-				var hexPoint = HexPoint.fromPixel(mousePoint);
-
-				var rivers = this.state.rivers;
-				var grid = this.state.grid;
-
-				var hex = undefined;
-				grid.forEach((value, key) => {
-					if (key.q === hexPoint.q && key.r === hexPoint.r)
-						hex = value;
-				});
-				var neighbourHex = undefined;
-				grid.forEach((value, key) => {
-					if (key.q === neighbourPoint.q && key.r === neighbourPoint.r)
-						neighbourHex = value;
-				});
-
-				if (hex !== undefined && neighbourHex !== undefined) {
-					for (var i = rivers.length - 1; i >= 0; i--) {
-						if ((rivers[i].hex === hex && rivers[i].hex2 === neighbourHex) || (rivers[i].hex === neighbourHex && rivers[i].hex2 === hex)) {
-							rivers.splice(i, 1);
-						}
-					}
-				}
-				this.setState({ rivers })
+				this.onRiverRightClick(new Point(event.clientX, event.clientY));
 				break;
+			case MouseState.Mountain:
+				this.onMountainRightClick(new Point(event.clientX, event.clientY));
+			break;
 		}
+	}
+
+	onMountainRightClick(mouse: Point) {
+		var grid = this.state.grid;
+		var hexPoint = HexPoint.fromPixel(mouse);
+
+		var hex: Hex | undefined = undefined;
+		for(var key of Array.from(grid.keys())) {
+			if (key.q === hexPoint.q && key.r === hexPoint.r)
+				hex = grid.get(key);
+		}
+
+		if (hex !== undefined) {
+			hex.hexType = HexType.None;
+		}
+	}
+
+	onRiverRightClick(mouse: Point) {
+		var closestHexPixelPoint = HexPoint.fromPixel(mouse).toPixel();
+		var direction = Utils.angleToDirection(Utils.toDegrees(Utils.angleBetweenCoordinates(closestHexPixelPoint, mouse)));
+		var neighbourPoint = Utils.directionToNeightbour(HexPoint.fromPixel(mouse), direction);
+		var hexPoint = HexPoint.fromPixel(mouse);
+
+		var rivers = this.state.rivers;
+		var grid = this.state.grid;
+
+		var hex = undefined;
+		for(var key of Array.from(grid.keys())) {
+			if (key.q === hexPoint.q && key.r === hexPoint.r)
+				hex = grid.get(key);
+		}
+		var neighbourHex = undefined;
+		for(var key of Array.from(grid.keys())) {
+			if (key.q === neighbourPoint.q && key.r === neighbourPoint.r)
+			neighbourHex = grid.get(key);
+		}
+
+		if (hex !== undefined && neighbourHex !== undefined) {
+			for (var i = rivers.length - 1; i >= 0; i--) {
+				if ((rivers[i].hex === hex && rivers[i].hex2 === neighbourHex) || (rivers[i].hex === neighbourHex && rivers[i].hex2 === hex)) {
+					rivers.splice(i, 1);
+				}
+			}
+		}
+		this.setState({ rivers })
 	}
 
 	onCanvasMouseClick(event: React.MouseEvent) {
@@ -93,35 +114,54 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 		var mouseState = this.state.mouseState;
 		switch (mouseState) {
 			case MouseState.River:
-				var mousePoint = new Point(event.clientX, event.clientY);
-				var closestHexPixelPoint = HexPoint.fromPixel(mousePoint).toPixel();
-				var direction = Utils.angleToDirection(Utils.toDegrees(Utils.angleBetweenCoordinates(closestHexPixelPoint, mousePoint)));
-				var neighbourPoint = Utils.directionToNeightbour(HexPoint.fromPixel(mousePoint), direction);
-				var hexPoint = HexPoint.fromPixel(mousePoint);
-				var rivers = this.state.rivers;
-				var grid = this.state.grid;
-
-				var hex: Hex | undefined = undefined;
-				grid.forEach((value, key) => {
-					if (key.q === hexPoint.q && key.r === hexPoint.r)
-						hex = value;
-				});
-				var neighbourHex: Hex | undefined = undefined;
-				grid.forEach((value, key) => {
-					if (key.q === neighbourPoint.q && key.r === neighbourPoint.r)
-						neighbourHex = value;
-				});
-
-				if (hex !== undefined && neighbourHex !== undefined) {
-					console.log(Direction[direction]);
-					console.log(hex);
-					console.log(neighbourHex);
-					if(River.indexOfRiver(rivers, new River(hex, neighbourHex)) === -1) {
-						rivers.push(new River(hex, neighbourHex));
-						this.setState({ rivers });
-					}
-				}
+				this.onRiverClick(new Point(event.clientX, event.clientY));
 				break;
+			case MouseState.Mountain:
+				this.onMountainClick(new Point(event.clientX, event.clientY));
+				break;
+		}
+	}
+
+	onRiverClick(mouse: Point) {
+		var closestHexPixelPoint = HexPoint.fromPixel(mouse).toPixel();
+		var direction = Utils.angleToDirection(Utils.toDegrees(Utils.angleBetweenCoordinates(closestHexPixelPoint, mouse)));
+		var neighbourPoint = Utils.directionToNeightbour(HexPoint.fromPixel(mouse), direction);
+		var hexPoint = HexPoint.fromPixel(mouse);
+		var rivers = this.state.rivers;
+		var grid = this.state.grid;
+
+		var hex: Hex | undefined = undefined;
+		for(var key of Array.from(grid.keys())) {
+			if (key.q === hexPoint.q && key.r === hexPoint.r)
+				hex = grid.get(key);
+		}
+		var neighbourHex: Hex | undefined = undefined;
+		for(var key of Array.from(grid.keys())) {
+			if (key.q === neighbourPoint.q && key.r === neighbourPoint.r)
+			neighbourHex = grid.get(key);
+		}
+
+		if (hex !== undefined && neighbourHex !== undefined) {
+			if(River.indexOfRiver(rivers, new River(hex, neighbourHex)) === -1) {
+				rivers.push(new River(hex, neighbourHex));
+				this.setState({ rivers });
+			}
+		}
+	}
+
+	onMountainClick(mouse: Point) {
+		var grid = this.state.grid;
+		var hexPoint = HexPoint.fromPixel(mouse);
+
+		var hex: Hex | undefined = undefined;
+		for(var key of Array.from(grid.keys())) {
+			if (key.q === hexPoint.q && key.r === hexPoint.r)
+				hex = grid.get(key);
+		}
+
+		if (hex !== undefined) {
+			hex.hexType = HexType.Mountain;
+			this.setState({grid})
 		}
 	}
 
@@ -139,7 +179,7 @@ class Canvas extends React.Component<ICanvasProps, ICanvasState> {
 		for (var r = 0; r < height; r++) {
 			var r_offset = Math.floor(r / 2);
 			for (var q = -r_offset; q < width - r_offset; q++) {
-				grid.set(new HexPoint(q, r), new Hex(new HexPoint(q, r)));
+				grid.set(new HexPoint(q, r), new Hex(new HexPoint(q, r), HexType.None));
 			}
 		}
 

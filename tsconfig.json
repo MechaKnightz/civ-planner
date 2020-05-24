@@ -24,6 +24,7 @@
       "react-dom"
     ],
     "downlevelIteration": true,
+    "strictNullChecks": true,
   },
   "include": [
     "src"

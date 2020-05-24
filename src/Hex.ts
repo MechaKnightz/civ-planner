@@ -1,12 +1,20 @@
 import HexPoint from './HexPoint'
 
+enum HexType {
+    None, 
+    Mountain
+}
+
+export { HexType };
 
 class Hex {
-    constructor(position: HexPoint)
+    constructor(position: HexPoint, hexType: HexType)
     {
         this.position = position;
+        this.hexType = hexType;
     }
     position: HexPoint;
+    hexType: HexType;
 
     static radius = 60;
     static width = Hex.radius * Math.sqrt(3);
