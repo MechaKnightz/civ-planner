@@ -30,12 +30,12 @@ function HexGrid(props: HexProps) {
                         <line className="river" x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} />
                     </g>)})
             }
-            {renderSwitch(props.mouseState, props.mousePoint)}
+            {renderPreview(props.mouseState, props.mousePoint)}
         </g>
         );
 }
 
-function renderSwitch(state: MouseState, mouse: Point) {
+function renderPreview(state: MouseState, mouse: Point) {
     switch(state) {
         case MouseState.River:
             var closestHexPixelPoint = HexPoint.fromPixel(mouse).toPixel();
